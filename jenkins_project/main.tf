@@ -55,3 +55,13 @@ resource "aws_security_group" "jenkins_server_sg" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
+
+resource "aws_s3_bucket" "jenkins_bucket" {
+  bucket = "jenkins-artifacts-482728"
+}
+resource "aws_s3_bucket_ownership_controls" "jenkins_bucket_acl" {
+  bucket = aws_s3_bucket.jenkins_bucket.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
