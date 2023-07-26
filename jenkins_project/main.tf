@@ -24,6 +24,7 @@ systemctl enable jenkins
 systemctl start jenkins
 EOF
 }
+# This line should be in user data but is not working 'jenkins-plugin-cli --plugins s3:0.12.3445.vda_704535b_5a_d'   
 
 resource "aws_security_group" "jenkins_server_sg" {
   name        = "web_server_inbound"
@@ -53,5 +54,15 @@ resource "aws_security_group" "jenkins_server_sg" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+resource "aws_s3_bucket" "jenkins_bucket" {
+  bucket = "jenkins-artifacts-482728"
+}
+resource "aws_s3_bucket_ownership_controls" "jenkins_bucket_acl" {
+  bucket = aws_s3_bucket.jenkins_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
   }
 }
