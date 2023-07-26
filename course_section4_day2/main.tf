@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-west-2"
+  region = var.aws_region
 }
 
 # Retrieve the list of AZs in the current AWS region
@@ -18,6 +18,12 @@ data "aws_ami" "amazon-linux" {
   }
 }
 
+locals {
+  team        = "api_mgmt_dev"
+  application = "corp_api"
+  server_name = "ec2-${var.environment}-api-${var.variables_sub_az}"
+}
+
 # VPC 
 resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
@@ -26,6 +32,7 @@ resource "aws_vpc" "vpc" {
     Name        = var.vpc_name
     Environment = "demo_environment"
     Terraform   = "true"
+    Region      = data.aws_region.current.name
   }
 }
 
@@ -126,16 +133,17 @@ resource "aws_nat_gateway" "nat_gateway" {
   }
 }
 
-# EC2 Instance
+# EC2 Instance - Web Server
 resource "aws_instance" "web" {
   ami                    = data.aws_ami.amazon-linux.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnets["public_subnet_1"].id
   vpc_security_group_ids = [aws_security_group.my-new-security-group.id]
-  key_name = "kriskey"
+  key_name               = "kriskey"
   tags = {
-    "Identity" = "Web_Server"
-    "Name"     = "Web_Server"
+    Name  = local.server_name
+    Owner = local.team
+    App   = local.application
   }
 }
 
@@ -152,13 +160,26 @@ resource "aws_security_group" "my-new-security-group" {
   }
   ingress {
     description = "Allow SSH from my IP"
-    from_port = "22"
-    to_port = "22"
-    protocol = "tcp"
+    from_port   = "22"
+    to_port     = "22"
+    protocol    = "tcp"
     cidr_blocks = ["24.162.52.74/32"]
   }
   tags = {
     Name    = "web_server_inbound"
     Purpose = "Intro to Resource Blocks Lab"
+  }
+}
+
+# Subnet for practicing variables
+
+resource "aws_subnet" "variables-subnet" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.variables_sub_cidr
+  availability_zone       = var.variables_sub_az
+  map_public_ip_on_launch = var.variables_sub_auto_ip
+  tags = {
+    Name      = "sub-variables-${var.variables_sub_az}"
+    Terraform = "true"
   }
 }
