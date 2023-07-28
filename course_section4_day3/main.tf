@@ -1,35 +1,36 @@
-/* 
+/*
 Name: IaC Buildout for Terraform Associate Exam
-Description: AWS Infrastucture Buildout
+Description: AWS Infrastructure Buildout
+Contributors: Bryan and Gabe
 */
 
+# Configure the AWS Provider
 provider "aws" {
-  region = var.aws_region
+  region = var
 }
 
-# Retrieve the list of AZs in the current AWS region
+#Retrieve the list of AZs in the current AWS region
 data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
-data "aws_ami" "amazon-linux" {
+
+# Terraform Data Block - Lookup Ubuntu 20.04
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+
   filter {
     name   = "name"
-    values = ["amzn-ami-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
+
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+
+  owners = ["099720109477"]
 }
 
-locals {
-  team        = "api_mgmt_dev"
-  application = "corp_api"
-  server_name = "ec2-${var.environment}-api-${var.variables_sub_az}"
-}
-
-# VPC 
+#Define the VPC 
 resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
 
@@ -37,11 +38,10 @@ resource "aws_vpc" "vpc" {
     Name        = var.vpc_name
     Environment = "demo_environment"
     Terraform   = "true"
-    Region      = data.aws_region.current.name
   }
 }
 
-# Private Subnets
+#Deploy the private subnets
 resource "aws_subnet" "private_subnets" {
   for_each          = var.private_subnets
   vpc_id            = aws_vpc.vpc.id
@@ -54,7 +54,7 @@ resource "aws_subnet" "private_subnets" {
   }
 }
 
-# Public Subnets
+#Deploy the public subnets
 resource "aws_subnet" "public_subnets" {
   for_each                = var.public_subnets
   vpc_id                  = aws_vpc.vpc.id
@@ -68,14 +68,14 @@ resource "aws_subnet" "public_subnets" {
   }
 }
 
-# Route Tables
+#Create route tables for public and private subnets
 resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.internet_gateway.id
-    # nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    #nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
     Name      = "demo_public_rtb"
@@ -87,7 +87,8 @@ resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.vpc.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
+    # gateway_id     = aws_internet_gateway.internet_gateway.id
     nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
@@ -96,7 +97,7 @@ resource "aws_route_table" "private_route_table" {
   }
 }
 
-# Route Table Associations
+#Create route table associations
 resource "aws_route_table_association" "public" {
   depends_on     = [aws_subnet.public_subnets]
   route_table_id = aws_route_table.public_route_table.id
@@ -111,7 +112,7 @@ resource "aws_route_table_association" "private" {
   subnet_id      = each.value.id
 }
 
-# Internet Gateway
+#Create Internet Gateway
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.vpc.id
   tags = {
@@ -119,7 +120,7 @@ resource "aws_internet_gateway" "internet_gateway" {
   }
 }
 
-# EIP for NAT Gateway
+#Create EIP for NAT Gateway
 resource "aws_eip" "nat_gateway_eip" {
   domain     = "vpc"
   depends_on = [aws_internet_gateway.internet_gateway]
@@ -128,7 +129,7 @@ resource "aws_eip" "nat_gateway_eip" {
   }
 }
 
-# NAT Gateway
+#Create NAT Gateway
 resource "aws_nat_gateway" "nat_gateway" {
   depends_on    = [aws_subnet.public_subnets]
   allocation_id = aws_eip.nat_gateway_eip.id
@@ -138,22 +139,25 @@ resource "aws_nat_gateway" "nat_gateway" {
   }
 }
 
-# EC2 Instance - Web Server
-resource "aws_instance" "web" {
-  ami           = data.aws_ami.amazon-linux.id
+# Terraform Resource Block - To Build EC2 instance in Public Subnet
+resource "aws_instance" "ubuntu_server" {
+  ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
-  vpc_security_group_ids = [
-    aws_security_group.ingress-ssh.id,
-    aws_security_group.vpc-ping.id,
-    aws_security_group.vpc-web.id
-  ]
+  security_groups = [aws_security_group.vpc-ping.id,
+  aws_security_group.ingress-ssh.id, aws_security_group.vpc-web.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.generated.key_name
   connection {
-    user        = "ec2-user"
+    user        = "ubuntu"
     private_key = tls_private_key.generated.private_key_pem
     host        = self.public_ip
+  }
+  tags = {
+    Name = "Ubuntu EC2 Server"
+  }
+  lifecycle {
+    ignore_changes = [security_groups]
   }
   provisioner "local-exec" {
     command = "chmod 600 ${local_file.private_key_pem.filename}"
@@ -165,21 +169,19 @@ resource "aws_instance" "web" {
       "sudo sh /tmp/assets/setup-web.sh",
     ]
   }
-  tags = {
-    Name  = local.server_name
-    Owner = local.team
-    App   = local.application
-  }
 }
 
+# Security Groups
 resource "aws_security_group" "ingress-ssh" {
   name   = "allow-all-ssh"
   vpc_id = aws_vpc.vpc.id
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["24.162.52.74/32"]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
   }
   // Terraform removes the default rule
   egress {
@@ -228,7 +230,7 @@ resource "aws_security_group" "vpc-ping" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    description = "Allow all ip and ports outbound"
+    description = "Allow all ip and ports outboun"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -236,25 +238,27 @@ resource "aws_security_group" "vpc-ping" {
   }
 }
 
-# Subnet for practicing variables
-
 resource "aws_subnet" "variables-subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.variables_sub_cidr
   availability_zone       = var.variables_sub_az
   map_public_ip_on_launch = var.variables_sub_auto_ip
+
   tags = {
     Name      = "sub-variables-${var.variables_sub_az}"
     Terraform = "true"
   }
 }
+
 resource "tls_private_key" "generated" {
   algorithm = "RSA"
 }
+
 resource "local_file" "private_key_pem" {
   content  = tls_private_key.generated.private_key_pem
   filename = "MyAWSKey.pem"
 }
+
 resource "aws_key_pair" "generated" {
   key_name   = "MyAWSKey"
   public_key = tls_private_key.generated.public_key_openssh
