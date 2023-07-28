@@ -3,13 +3,28 @@ variable "my_ip" {
   default   = " "
   sensitive = true
 }
-
 variable "ami" {
   type    = string
   default = "ami-08541bb85074a743a"
 }
-
 variable "bucket_name" {
   type    = string
   default = "jenkins-artifacts-0726"
+}
+variable "aws_region" {
+  type    = string
+  default = "us-west-2"
+}
+variable "instance_type" {
+  type    = string
+  default = "t2.micro"
+}
+variable "key_pair" {
+  type    = string
+  default = "kriskey"
+}
+variable "user" {
+  description = "Instance user"
+  type    = string
+  default = "ec2-user"
 }
