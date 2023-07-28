@@ -1,19 +1,22 @@
-provider "aws" {
-  region = "us-west-2"
-}
 
+provider "aws" {
+  region = var.aws_region
+}
 data "aws_availability_zones" "azs" {}
+data "aws_vpc" "default" {
+  default = true
+}
 
 # EC2 Instance
 resource "aws_instance" "jenkins_server" {
   ami                    = var.ami
-  instance_type          = "t2.micro"
+  instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.jenkins_server_sg.id]
-  key_name               = "kriskey"
+  key_name               = var.key_pair
   tags = {
     Name = "Jenkins_Server"
   }
-  user_data = <<EOF
+  user_data            = <<EOF
 #!/bin/bash
 yum update -y
 wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
@@ -22,14 +25,16 @@ dnf install java-11-amazon-corretto -y
 yum install jenkins -y
 systemctl enable jenkins
 systemctl start jenkins
+sudo jenkins-plugin-cli --plugins s3:0.12.3445.vda_704535b_5a_d  
+sudo reboot 
 EOF
-  # This line should be in user data but is not working 'jenkins-plugin-cli --plugins s3:0.12.3445.vda_704535b_5a_d'   
   iam_instance_profile = aws_iam_instance_profile.ec2_bucket_profile.name
 }
+
 resource "aws_security_group" "jenkins_server_sg" {
   name        = "web_server_inbound"
   description = "Allow SSH from MyIP and access to port 8080"
-  vpc_id      = "vpc-0b5e4f154b9d81d02"
+  vpc_id      = data.aws_vpc.default.id
   ingress {
     description = "Allow 8080 from the Internet"
     from_port   = 8080
@@ -43,10 +48,6 @@ resource "aws_security_group" "jenkins_server_sg" {
     to_port     = "22"
     protocol    = "tcp"
     cidr_blocks = [var.my_ip]
-  }
-  tags = {
-    Name    = "web_server_inbound"
-    Purpose = "Intro to Resource Blocks Lab"
   }
   egress {
     from_port        = 0
