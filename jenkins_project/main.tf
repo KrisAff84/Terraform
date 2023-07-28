@@ -116,3 +116,4 @@ resource "aws_iam_instance_profile" "ec2_bucket_profile" {
   name = "ec2_bucket_profile"
   role = aws_iam_role.ec2_bucket_role.name
 }
+# test
