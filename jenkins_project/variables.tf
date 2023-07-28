@@ -25,6 +25,6 @@ variable "key_pair" {
 }
 variable "user" {
   description = "Instance user"
-  type    = string
-  default = "ec2-user"
+  type        = string
+  default     = "ec2-user"
 }

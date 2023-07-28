@@ -1,8 +1,8 @@
 terraform {
+  required_version = "~> 1.5.3"
   required_providers {
-    sftp = {
-      source = "danitso/sftp"
-      version = "0.2.0"
+    aws = {
+      version = "~> 5.10.0"
     }
   }
 }
