@@ -25,8 +25,6 @@ dnf install java-11-amazon-corretto -y
 yum install jenkins -y
 systemctl enable jenkins
 systemctl start jenkins
-sudo jenkins-plugin-cli --plugins s3:0.12.3445.vda_704535b_5a_d  
-sudo reboot 
 EOF
   iam_instance_profile = aws_iam_instance_profile.ec2_bucket_profile.name
 }
