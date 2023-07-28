@@ -1,4 +1,7 @@
-# Deploys a 
+/* Deploys an EC2 instance with Jenkins installed, as well as an S3 Bucket
+for Jenkins artifacts, along with all of the necessary security groups and
+permissions.
+*/
 provider "aws" {
   region = var.aws_region
 }
