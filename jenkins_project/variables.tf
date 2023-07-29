@@ -1,8 +1,3 @@
-variable "my_ip" {
-  type      = string
-  default   = " "
-  sensitive = true
-}
 variable "ami" {
   type    = string
   default = "ami-08541bb85074a743a"
@@ -21,10 +16,15 @@ variable "instance_type" {
 }
 variable "key_pair" {
   type    = string
-  default = "kriskey"
+  default = "jenkins_key"
 }
 variable "user" {
   description = "Instance user"
   type        = string
   default     = "ec2-user"
+}
+variable "my_ip" {
+  type      = string
+  default   = " "
+  sensitive = true
 }

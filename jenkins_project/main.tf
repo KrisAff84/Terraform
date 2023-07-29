@@ -63,12 +63,6 @@ resource "aws_s3_bucket" "jenkins_bucket" {
   bucket        = var.bucket_name
   force_destroy = true
 }
-resource "aws_s3_bucket_ownership_controls" "jenkins_bucket_acl" {
-  bucket = aws_s3_bucket.jenkins_bucket.id
-  rule {
-    object_ownership = "ObjectWriter"
-  }
-}
 
 resource "aws_iam_role_policy" "policy" {
   name = "ec2_jenkins_policy"
@@ -116,4 +110,17 @@ resource "aws_iam_instance_profile" "ec2_bucket_profile" {
   name = "ec2_bucket_profile"
   role = aws_iam_role.ec2_bucket_role.name
 }
-# test
+
+resource "tls_private_key" "key" {
+  algorithm = "RSA"
+}
+
+resource "local_file" "private_key_pem" {
+  content  = tls_private_key.key.private_key_pem
+  filename = "${var.key_pair}.pem"
+}
+
+resource "aws_key_pair" "key" {
+  key_name   = var.key_pair
+  public_key = tls_private_key.key.public_key_openssh
+}
