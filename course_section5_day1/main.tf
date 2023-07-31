@@ -7,6 +7,11 @@ Contributors: Bryan and Gabe
 # Configure the AWS Provider
 provider "aws" {
   region = var.aws_region
+  default_tags {
+    tags = {
+        Environment = terraform.workspace
+    }
+  }
 }
 
 #Retrieve the list of AZs in the current AWS region
@@ -139,37 +144,6 @@ resource "aws_nat_gateway" "nat_gateway" {
   }
 }
 
-# Terraform Resource Block - To Build EC2 instance in Public Subnet
-resource "aws_instance" "ubuntu_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
-  security_groups = [aws_security_group.vpc-ping.id,
-  aws_security_group.ingress-ssh.id, aws_security_group.vpc-web.id]
-  associate_public_ip_address = true
-  key_name                    = aws_key_pair.generated.key_name
-  connection {
-    user        = "ubuntu"
-    private_key = tls_private_key.generated.private_key_pem
-    host        = self.public_ip
-  }
-  tags = {
-    Name = "Ubuntu EC2 Server"
-  }
-  lifecycle {
-    ignore_changes = [security_groups]
-  }
-  provisioner "local-exec" {
-    command = "chmod 600 ${local_file.private_key_pem.filename}"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "sudo rm -rf /tmp",
-      "sudo git clone https://github.com/hashicorp/demo-terraform-101 /tmp",
-      "sudo sh /tmp/assets/setup-web.sh",
-    ]
-  }
-}
 
 # Security Groups
 resource "aws_security_group" "ingress-ssh" {
@@ -241,11 +215,11 @@ resource "aws_security_group" "vpc-ping" {
 resource "aws_subnet" "variables-subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.variables_sub_cidr
-  availability_zone       = var.variables_sub_az
+  availability_zone       = "${var.aws_region}c"
   map_public_ip_on_launch = var.variables_sub_auto_ip
 
   tags = {
-    Name      = "sub-variables-${var.variables_sub_az}"
+    Name      = "sub-variables-${var.aws_region}c"
     Terraform = "true"
   }
 }
@@ -264,5 +238,70 @@ resource "aws_key_pair" "generated" {
   public_key = tls_private_key.generated.public_key_openssh
   lifecycle {
     ignore_changes = [key_name]
+  }
+}
+
+# Terraform Resource Block - To Build EC2 instance in Public Subnet
+resource "aws_instance" "ubuntu_server" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
+  security_groups = [aws_security_group.vpc-ping.id,
+  aws_security_group.ingress-ssh.id, aws_security_group.vpc-web.id]
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.generated.key_name
+  connection {
+    user        = "ubuntu"
+    private_key = tls_private_key.generated.private_key_pem
+    host        = self.public_ip
+  }
+  tags = {
+    Name = "Ubuntu EC2 Server"
+  }
+  lifecycle {
+    ignore_changes = [security_groups]
+  }
+  provisioner "local-exec" {
+    command = "chmod 600 ${local_file.private_key_pem.filename}"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo rm -rf /tmp",
+      "sudo git clone https://github.com/hashicorp/demo-terraform-101 /tmp",
+      "sudo sh /tmp/assets/setup-web.sh",
+    ]
+  }
+}
+
+# Terraform Resource Block - To Build Web Server in Public Subnet
+resource "aws_instance" "web_server" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
+  security_groups = [aws_security_group.vpc-ping.id,
+  aws_security_group.ingress-ssh.id, aws_security_group.vpc-web.id]
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.generated.key_name
+  connection {
+    user        = "ubuntu"
+    private_key = tls_private_key.generated.private_key_pem
+    host        = self.public_ip
+  }
+  # Leave the first part of the block unchanged and create our `local-exec` provisioner
+  provisioner "local-exec" {
+    command = "chmod 600 ${local_file.private_key_pem.filename}"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo rm -rf /tmp",
+      "sudo git clone https://github.com/hashicorp/demo-terraform-101 /tmp",
+      "sudo sh /tmp/assets/setup-web.sh",
+    ]
+  }
+  tags = {
+    Name = "Web EC2 Server"
+  }
+  lifecycle {
+    ignore_changes = [security_groups]
   }
 }
