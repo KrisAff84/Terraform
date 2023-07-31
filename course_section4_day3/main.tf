@@ -6,7 +6,7 @@ Contributors: Bryan and Gabe
 
 # Configure the AWS Provider
 provider "aws" {
-  region = var
+  region = var.aws_region
 }
 
 #Retrieve the list of AZs in the current AWS region
