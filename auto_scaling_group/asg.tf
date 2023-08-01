@@ -20,12 +20,19 @@ EOF
   )
 }
 
-# resource "aws_autoscaling_group" "bar" {
-#   name                = "asg_asg"
-#   max_size            = 5
-#   min_size            = 2       
-#   health_check_type   = "ELB"
-#   desired_capacity    = 2
-#   launch_template     = aws_launch_template.asg_web_lt.name
-#   vpc_zone_identifier = [aws_subnet.example1.id, aws_subnet.example2.id]
-# }
+resource "aws_autoscaling_group" "web_asg" {
+  name = "web_asg"
+
+  launch_template {
+    id      = aws_launch_template.asg_web_lt.id
+    version = "$Latest"
+  }
+  max_size          = 5
+  min_size          = 2
+  health_check_type = "ELB"
+  desired_capacity  = 2
+  availability_zones = [
+    data.aws_availability_zones.available.names[0],
+    data.aws_availability_zones.available.names[1]
+  ]
+}
