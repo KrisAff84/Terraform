@@ -1,16 +1,17 @@
 variable "region" {
   description = "AWS Region"
   type        = string
-  default     = "us.west.1"
+  default     = "us-west-1"
 }
-resource "random_string" "random" {
+variable "bucket_prefix" {
+  description = "Prefix for bucket name"
+  type = string
+  default = "asg-bucket-"
+}
+resource "random_string" "bucket_suffix" {
   length = 6
   upper  = false
-}
-variable "bucket" {
-  description = "Name of S3 bucket"
-  type        = string
-  default     = "ASG_project_bucket${random_string.random}"
+  special = false
 }
 variable "ami" {
   description = "AMI for EC2 launch template"
