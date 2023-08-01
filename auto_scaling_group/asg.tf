@@ -1,4 +1,11 @@
-# Need launch template
+resource "aws_launch_template" "asg_web_lt" {
+  name = "asg_web_lt"
+  image_id = var.ami
+  # iam_instance_profile {
+  #   name = "test"
+  # }
+
+}
 
 # resource "aws_autoscaling_group" "bar" {
 #   name                = "asg_asg"
