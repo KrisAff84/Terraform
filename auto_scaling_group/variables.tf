@@ -5,12 +5,12 @@ variable "region" {
 }
 variable "bucket_prefix" {
   description = "Prefix for bucket name"
-  type = string
-  default = "asg-bucket-"
+  type        = string
+  default     = "asg-bucket-"
 }
 resource "random_string" "bucket_suffix" {
-  length = 6
-  upper  = false
+  length  = 6
+  upper   = false
   special = false
 }
 variable "ami" {
@@ -23,4 +23,12 @@ variable "instance_type" {
   type        = string
   default     = "t2.micro"
 }
-
+variable "key_name" {
+  description = "Name for generated key pair"
+  type        = string
+  default     = "kris_asg_key"
+}
+variable "my_ip" {
+  type    = string
+  default = "24.162.52.74/32"
+}
