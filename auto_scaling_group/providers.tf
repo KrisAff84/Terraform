@@ -5,5 +5,8 @@ terraform {
       version = "~> 5.10.0"
       region  = var.region
     }
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3.5.1"
   }
 }
