@@ -2,15 +2,28 @@
 for Jenkins artifacts, along with all of the necessary security groups and
 permissions.
 */
+
+#####################################
+# Provider
+#####################################
+
 provider "aws" {
   region = var.aws_region
 }
+
+#####################################
+# Data 
+#####################################
+
 data "aws_availability_zones" "azs" {}
 data "aws_vpc" "default" {
   default = true
 }
 
+#####################################
 # EC2 Instance
+#####################################
+
 resource "aws_instance" "jenkins_server" {
   ami                    = var.ami
   instance_type          = var.instance_type
@@ -31,6 +44,10 @@ systemctl start jenkins
 EOF
   iam_instance_profile = aws_iam_instance_profile.ec2_bucket_profile.name
 }
+
+#####################################
+# Instance Security Group
+#####################################
 
 resource "aws_security_group" "jenkins_server_sg" {
   name        = "web_server_inbound"
@@ -59,10 +76,19 @@ resource "aws_security_group" "jenkins_server_sg" {
   }
 }
 
+#####################################
+# S3 Bucket
+#####################################
+
 resource "aws_s3_bucket" "jenkins_bucket" {
   bucket        = var.bucket_name
   force_destroy = true
 }
+
+#####################################
+# Instance Profile - Gives Instance
+# Read/Write Access to S3 Bucket
+#####################################
 
 resource "aws_iam_role_policy" "policy" {
   name = "ec2_jenkins_policy"
@@ -110,6 +136,10 @@ resource "aws_iam_instance_profile" "ec2_bucket_profile" {
   name = "ec2_bucket_profile"
   role = aws_iam_role.ec2_bucket_role.name
 }
+
+#####################################
+# Key Pair
+#####################################
 
 resource "tls_private_key" "key" {
   algorithm = "RSA"
