@@ -8,11 +8,6 @@ variable "bucket_prefix" {
   type        = string
   default     = "asg-bucket-"
 }
-resource "random_string" "bucket_suffix" {
-  length  = 6
-  upper   = false
-  special = false
-}
 variable "ami" {
   description = "AMI for EC2 launch template"
   type        = string
