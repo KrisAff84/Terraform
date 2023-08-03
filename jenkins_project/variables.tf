@@ -18,11 +18,6 @@ variable "key_pair" {
   type    = string
   default = "jenkins_key"
 }
-variable "user" {
-  description = "Instance user"
-  type        = string
-  default     = "ec2-user"
-}
 variable "my_ip" {
   type      = string
   default   = " "
