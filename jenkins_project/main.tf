@@ -12,10 +12,9 @@ provider "aws" {
 }
 
 #####################################
-# Data 
+# Data - Get Default VPC
 #####################################
 
-data "aws_availability_zones" "azs" {}
 data "aws_vpc" "default" {
   default = true
 }
