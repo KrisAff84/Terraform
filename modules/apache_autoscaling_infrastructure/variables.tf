@@ -108,6 +108,17 @@ variable "ssh_to_port" {
   default = 22
 }
 variable "my_ip" {
-  description = "IP address to SSH from"
+  description = "IP CIDR to SSH from"
   type        = string
 }
+
+################################
+# S3 Bucket
+################################
+
+variable "force_destroy_s3" {
+  description = "Changing to true allows bucket to be destroyed even if it contains objects"
+  type        = bool
+  default     = false
+}
+
