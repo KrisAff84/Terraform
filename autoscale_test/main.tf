@@ -10,3 +10,13 @@ module "auto_scaling_group" {
   desired_capacity = 2
   my_ip            = "24.162.52.74/32"
 }
+
+output "launch_template_id" {
+  value = module.auto_scaling_group.launch_temp_id
+}
+output "vpc" {
+  value = module.auto_scaling_group.vpc_id
+}
+output "autoscaling_group_arn" {
+  value = module.auto_scaling_group.asg_arn
+}

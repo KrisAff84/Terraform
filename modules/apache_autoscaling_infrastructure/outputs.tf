@@ -1,4 +1,24 @@
 ##########################################
+# Global
+##########################################
+
+output "region" {
+  value = var.region
+}
+output "name_prefix" {
+  value = var.name_prefix
+}
+output "vpc_id" {
+  value = data.aws_vpc.default.id
+}
+output "vpc_cidr" {
+  value = data.aws_vpc.default.cidr_block
+}
+output "vpc_cidr_ipv6" {
+  value = data.aws_vpc.default.ipv6_cidr_block
+}
+
+##########################################
 # Launch Template
 ##########################################
 
@@ -78,7 +98,4 @@ output "asg_tag" {
 }
 output "asg_tg_arns" {
   value = aws_autoscaling_group.apache_asg.target_group_arns
-}
-output "asg_vpc" {
-  value = aws_autoscaling_group.apache_asg.vpc_zone_identifier
 }

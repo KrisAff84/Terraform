@@ -134,8 +134,8 @@ resource "aws_iam_role_policy" "policy" {
           "s3:DeleteObject",
         ],
         "Resource" : [
-          format("%s%s%s%s", "arn:aws:s3:::", var.name_prefix, "-asg-bucket-", random_string.bucket_suffix.result),
-          format("%s%s%s%s%s", "arn:aws:s3:::", var.name_prefix, "-asg-bucket-", random_string.bucket_suffix.result, "/*")
+          join("", ["arn:aws:s3:::", var.name_prefix, "-asg-bucket-", random_string.bucket_suffix.result]),
+          join("", ["arn:aws:s3:::", var.name_prefix, "-asg-bucket-", random_string.bucket_suffix.result, "/*"])
         ]
       }
     ]
@@ -170,8 +170,8 @@ resource "aws_iam_instance_profile" "asg_bucket_profile" {
 ########################################
 
 resource "aws_s3_bucket" "asg_bucket" {
-  bucket        = format("%s%s%s", var.name_prefix, "-asg-bucket-", random_string.bucket_suffix.result)
-  force_destroy = true
+  bucket        = join("-", [var.name_prefix, "asg-bucket", random_string.bucket_suffix.result])
+  force_destroy = var.force_destroy_s3
 }
 
 ########################################
