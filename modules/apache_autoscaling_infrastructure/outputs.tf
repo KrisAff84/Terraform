@@ -81,9 +81,9 @@ output "asg_launch_temp_name" {
 output "asg_launch_temp_id" {
   value = aws_autoscaling_group.apache_asg.launch_template[0].id
 }
-# output "load_balancers" {
-#   value = aws_autoscaling_group.apache_asg.launch_template[0].load_balancers
-# }
+output "asg_load_balancers" {
+  value = aws_autoscaling_group.apache_asg.load_balancers
+}
 output "max_size" {
   value = aws_autoscaling_group.apache_asg.max_size
 }
@@ -98,4 +98,53 @@ output "asg_tag" {
 }
 output "asg_tg_arns" {
   value = aws_autoscaling_group.apache_asg.target_group_arns
+}
+
+##########################################
+# Load Balancer
+##########################################
+
+output "lb_arn" {
+  value = aws_lb.asg_lb.arn
+}
+output "lb_name" {
+  value = aws_lb.asg_lb.name
+}
+output "lb_dns_name" {
+  value = aws_lb.asg_lb.dns_name
+}
+output "lb_zone_id" {
+  value = aws_lb.asg_lb.zone_id
+}
+output "lb_sg_id" {
+  value = aws_lb.asg_lb.security_groups
+}
+output "lb_subnets" {
+  value = aws_lb.asg_lb.subnets
+}
+output "lb_tg_arns" {
+  value = aws_lb_target_group.asg_lb_tg.arn
+}
+output "lb_tg_name" {
+  value = aws_lb_target_group.asg_lb_tg.name
+}
+output "lb_tg_port" {
+  value = aws_lb_target_group.asg_lb_tg.port
+}
+output "lb_tg_protocol" {
+  value = aws_lb_target_group.asg_lb_tg.protocol
+}
+output "lb_listener_arn" {
+  value = aws_lb_listener.asg_lb_listener.arn
+}
+
+##########################################
+# S3 Bucket
+##########################################
+
+output "bucket_name" {
+  value = aws_s3_bucket.asg_bucket.id
+}
+output "bucket_arn" {
+  value = aws_s3_bucket.asg_bucket.arn
 }

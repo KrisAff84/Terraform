@@ -8,6 +8,12 @@ data "aws_vpc" "default" {
 data "aws_availability_zones" "available" {
   state = "available"
 }
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
 
 ###########################################
 # Launch Template
@@ -19,7 +25,7 @@ resource "aws_launch_template" "apache_lt" {
   instance_type = var.instance_type
   key_name      = var.key_name
   vpc_security_group_ids = [
-    aws_security_group.asg_web_access_sg.id,
+    aws_security_group.asg_lb_access.id,
     aws_security_group.asg_ssh_access_sg.id
   ]
   iam_instance_profile {
@@ -49,10 +55,16 @@ resource "aws_autoscaling_group" "apache_asg" {
   min_size          = var.min_size
   health_check_type = "ELB"
   desired_capacity  = var.desired_capacity
-  availability_zones = [
-    data.aws_availability_zones.available.names[0],
-    data.aws_availability_zones.available.names[1]
+  vpc_zone_identifier = [
+    data.aws_subnets.default.ids[0],
+    data.aws_subnets.default.ids[1]
   ]
+  # target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
+}
+
+resource "aws_autoscaling_attachment" "asg_attachment" {
+  autoscaling_group_name = aws_autoscaling_group.apache_asg.name
+  lb_target_group_arn   = aws_lb_target_group.asg_lb_tg.arn
 }
 
 
@@ -63,25 +75,16 @@ resource "aws_autoscaling_group" "apache_asg" {
 
 ################## Web Access ####################
 
-resource "aws_security_group" "asg_web_access_sg" {
+resource "aws_security_group" "asg_lb_access" {
   name        = "${var.name_prefix}_asg_web_access"
-  description = var.sg_description
+  description = "Allow web access through load balancer"
   vpc_id      = data.aws_vpc.default.id
   ingress {
-    description      = var.http_rule_description
-    from_port        = var.http_from_port
-    to_port          = var.http_to_port
-    protocol         = "tcp"
-    cidr_blocks      = [var.http_cidr]
-    ipv6_cidr_blocks = [var.http_cidr_ipv6]
-  }
-  ingress {
-    description      = var.https_rule_description
-    from_port        = var.https_from_port
-    to_port          = var.https_to_port
-    protocol         = "tcp"
-    cidr_blocks      = [var.https_cidr]
-    ipv6_cidr_blocks = [var.https_cidr_ipv6]
+    description     = var.http_rule_description
+    from_port       = var.http_from_port
+    to_port         = var.http_to_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.asg_lb_sg.id]
   }
   egress {
     from_port        = 0
@@ -113,10 +116,9 @@ resource "aws_security_group" "asg_ssh_access_sg" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
-
 #############################################
 # Instance Profile - Allows Instances 
-# Read/Write Access to S3 Bucket
+#             Read/Write Access to S3 Bucket
 #############################################
 
 resource "aws_iam_role_policy" "policy" {
@@ -164,6 +166,67 @@ resource "aws_iam_instance_profile" "asg_bucket_profile" {
   name = "${var.name_prefix}_asg_bucket_profile"
   role = aws_iam_role.asg_bucket_role.name
 }
+
+#############################################
+# Application Load Balancer
+#############################################
+
+resource "aws_lb" "asg_lb" {
+  name               = "${var.name_prefix}-asg-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.asg_lb_sg.id]
+  subnets = [
+    data.aws_subnets.default.ids[0],
+    data.aws_subnets.default.ids[1]
+  ]
+}
+
+############### Listener #####################
+
+resource "aws_lb_listener" "asg_lb_listener" {
+  load_balancer_arn = aws_lb.asg_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.asg_lb_tg.arn
+  }
+}
+
+############### Target Group #####################
+
+resource "aws_lb_target_group" "asg_lb_tg" {
+  name     = "${var.name_prefix}-asg-lb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.default.id
+}
+
+#############################################
+# Load Balancer Security Group
+#############################################
+
+resource "aws_security_group" "asg_lb_sg" {
+  name        = "${var.name_prefix}_asg_lb_sg"
+  description = var.lb_sg_description
+  vpc_id      = data.aws_vpc.default.id
+  ingress {
+    description = var.http_rule_description
+    from_port   = var.http_from_port
+    to_port     = var.http_to_port
+    protocol    = "tcp"
+    cidr_blocks = [var.http_cidr]
+    ipv6_cidr_blocks = [var.http_cidr_ipv6]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 
 ########################################
 # S3 Bucket
