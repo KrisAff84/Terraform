@@ -59,14 +59,8 @@ resource "aws_autoscaling_group" "apache_asg" {
     data.aws_subnets.default.ids[0],
     data.aws_subnets.default.ids[1]
   ]
-  # target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
+  target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
 }
-
-resource "aws_autoscaling_attachment" "asg_attachment" {
-  autoscaling_group_name = aws_autoscaling_group.apache_asg.name
-  lb_target_group_arn   = aws_lb_target_group.asg_lb_tg.arn
-}
-
 
 ##################################################
 # Launch Template Security Groups
@@ -212,11 +206,11 @@ resource "aws_security_group" "asg_lb_sg" {
   description = var.lb_sg_description
   vpc_id      = data.aws_vpc.default.id
   ingress {
-    description = var.http_rule_description
-    from_port   = var.http_from_port
-    to_port     = var.http_to_port
-    protocol    = "tcp"
-    cidr_blocks = [var.http_cidr]
+    description      = var.http_rule_description
+    from_port        = var.http_from_port
+    to_port          = var.http_to_port
+    protocol         = "tcp"
+    cidr_blocks      = [var.http_cidr]
     ipv6_cidr_blocks = [var.http_cidr_ipv6]
   }
   egress {
