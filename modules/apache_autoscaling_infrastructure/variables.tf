@@ -40,14 +40,14 @@ variable "desired_capacity" {
 }
 
 ################################
-# Autoscaling Security Groups
+# Load Balancer Security Groups
 ################################
 
 ########## HTTP Access #########
 
-variable "sg_description" {
+variable "lb_sg_description" {
   type    = string
-  default = "Allow HTTP(S) access"
+  default = "Allow HTTP access"
 }
 variable "http_rule_description" {
   type    = string
@@ -70,28 +70,9 @@ variable "http_cidr_ipv6" {
   default = "::/0"
 }
 
-######### HTTPS Access #########
-
-variable "https_rule_description" {
-  type    = string
-  default = "Allow HTTPS from the Internet"
-}
-variable "https_from_port" {
-  type    = number
-  default = 443
-}
-variable "https_to_port" {
-  type    = number
-  default = 443
-}
-variable "https_cidr" {
-  type    = string
-  default = "0.0.0.0/0"
-}
-variable "https_cidr_ipv6" {
-  type    = string
-  default = "::/0"
-}
+################################
+# Autoscaling Security Groups
+################################
 
 ########## SSH Access ##########
 
