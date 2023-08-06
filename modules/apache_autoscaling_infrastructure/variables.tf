@@ -102,4 +102,3 @@ variable "force_destroy_s3" {
   type        = bool
   default     = false
 }
-
