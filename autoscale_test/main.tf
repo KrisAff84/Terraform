@@ -20,9 +20,6 @@ output "vpc" {
 output "autoscaling_group_arn" {
   value = module.auto_scaling_group.asg_arn
 }
-output "bucket_name" {
-  value = module.auto_scaling_group.bucket_name
-}
 output "lb_dns_name" {
   value = module.auto_scaling_group.lb_dns_name
 }
