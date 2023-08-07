@@ -137,14 +137,3 @@ output "lb_tg_protocol" {
 output "lb_listener_arn" {
   value = aws_lb_listener.asg_lb_listener.arn
 }
-
-##########################################
-# S3 Bucket
-##########################################
-
-output "bucket_name" {
-  value = aws_s3_bucket.asg_bucket.id
-}
-output "bucket_arn" {
-  value = aws_s3_bucket.asg_bucket.arn
-}
