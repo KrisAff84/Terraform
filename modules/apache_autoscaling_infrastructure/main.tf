@@ -41,8 +41,8 @@ EOF
 ###########################################
 
 locals {
-  subnetID1 = data.aws_subnets.default.ids[0]
-  subnetID2 = data.aws_subnets.default.ids[1]
+  subnet_id1 = var.asg_subnet_id_1 != "" ? var.asg_subnet_id_1 : data.aws_subnets.default.ids[0]
+  subnet_id2 = var.asg_subnet_id_2 != "" ? var.asg_subnet_id_2 : data.aws_subnets.default.ids[1]
 }
 resource "aws_autoscaling_group" "apache_asg" {
   name = "${var.name_prefix}_asg"
@@ -55,8 +55,8 @@ resource "aws_autoscaling_group" "apache_asg" {
   health_check_type = "ELB"
   desired_capacity  = var.desired_capacity
   vpc_zone_identifier = [
-    try(var.asg_subnet_id_1, local.subnetID1),
-    try(var.asg_subnet_id_2, local.subnetID2)
+    subnet_id1,
+    subnet_id2
   ]
   target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
 }
