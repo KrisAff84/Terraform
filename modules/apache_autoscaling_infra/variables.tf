@@ -38,16 +38,6 @@ variable "min_size" {
 variable "desired_capacity" {
   type = number
 }
-variable "asg_subnet_id_1" {
-  description = "Private Subnet ID for autoscaling group"
-  type = string
-  default = " "
-}
-variable "asg_subnet_id_2" {
-  description = "Private Subnet ID for autoscaling group"
-  type = string
-  default = " "
-}
 
 ################################
 # Load Balancer Security Groups

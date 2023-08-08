@@ -1,8 +1,7 @@
 #########################################
-# Data - Default VPC and Subnets
+# Data 
 #########################################
 
-# WHEN THIS NOTE DISAPPEARS IT'S SAFE 
 data "aws_vpc" "default" {
   default = true
 }
@@ -40,10 +39,6 @@ EOF
 # Autoscaling Group
 ###########################################
 
-locals {
-  subnetID1 = data.aws_subnets.default.ids[0]
-  subnetID2 = data.aws_subnets.default.ids[1]
-}
 resource "aws_autoscaling_group" "apache_asg" {
   name = "${var.name_prefix}_asg"
   launch_template {
@@ -55,8 +50,8 @@ resource "aws_autoscaling_group" "apache_asg" {
   health_check_type = "ELB"
   desired_capacity  = var.desired_capacity
   vpc_zone_identifier = [
-    try(var.asg_subnet_id_1, local.subnetID1),
-    try(var.asg_subnet_id_2, local.subnetID2)
+    data.aws_subnets.default.ids[0],
+    data.aws_subnets.default.ids[1]
   ]
   target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
 }

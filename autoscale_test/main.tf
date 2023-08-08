@@ -1,5 +1,5 @@
 module "auto_scaling_group" {
-  source           = "../modules/apache_autoscaling_infrastructure"
+  source           = "../modules/apache_autoscaling_infra"
   name_prefix      = "test"
   region           = "us-west-2"
   ami              = "ami-00970f57473724c10"
@@ -10,6 +10,12 @@ module "auto_scaling_group" {
   desired_capacity = 2
   my_ip            = "24.162.52.74/32"
 }
+
+# module "network" {
+#   source = "../modules/2-tier-network"
+#   region  = "us-west-2"
+#   vpc_cidr = "10.0.0.0/16"
+# }
 
 output "launch_template_id" {
   value = module.auto_scaling_group.launch_temp_id
