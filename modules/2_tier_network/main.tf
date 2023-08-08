@@ -31,18 +31,22 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "public1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(var.vpc_cidr, 4, 0)
+  availability_zone = data.aws_availability_zones.available.names[0]
 }
 resource "aws_subnet" "public2" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(var.vpc_cidr, 4, 1)
+  availability_zone = data.aws_availability_zones.available.names[1]
 }
 resource "aws_subnet" "private1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(var.vpc_cidr, 4, 7)
+  availability_zone = data.aws_availability_zones.available.names[0]
 }
 resource "aws_subnet" "private2" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(var.vpc_cidr, 4, 8)
+  availability_zone = data.aws_availability_zones.available.names[1]
 }
 
 ###########################################

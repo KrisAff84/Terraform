@@ -7,3 +7,6 @@ Define subnet IDs as locals and then pass in below argument. If variable value c
 
 subnet_id1 = var.asg_subnet_id_1 != "" ? var.asg_subnet_id_1 : data.aws_subnets.default.ids[0]
 
+# Update #2
+Everything works as expected now. Just need to update outputs.tf to not use data sources for vpc and subnets. 
+

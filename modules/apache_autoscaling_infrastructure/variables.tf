@@ -11,6 +11,12 @@ variable "region" {
   type = string
 }
 
+variable "vpc" {
+  description = "VPC ID"
+  type        = string
+  default     = ""
+}
+
 ################################
 # Launch Template
 ################################
@@ -38,15 +44,25 @@ variable "min_size" {
 variable "desired_capacity" {
   type = number
 }
-variable "asg_subnet_id_1" {
+variable "private_subnet_1" {
   description = "Private Subnet ID for autoscaling group"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
-variable "asg_subnet_id_2" {
+variable "private_subnet_2" {
   description = "Private Subnet ID for autoscaling group"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
+}
+variable "public_subnet_1" {
+  description = "Public Subnet ID for load balancer"
+  type        = string
+  default     = ""
+}
+variable "public_subnet_2" {
+  description = "Public Subnet ID for load balancer"
+  type        = string
+  default     = ""
 }
 
 ################################
