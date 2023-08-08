@@ -41,12 +41,12 @@ variable "desired_capacity" {
 variable "asg_subnet_id_1" {
   description = "Private Subnet ID for autoscaling group"
   type = string
-  default = " "
+  default = ""
 }
 variable "asg_subnet_id_2" {
   description = "Private Subnet ID for autoscaling group"
   type = string
-  default = " "
+  default = ""
 }
 
 ################################
