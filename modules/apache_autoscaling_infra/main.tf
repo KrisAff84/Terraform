@@ -61,7 +61,7 @@ resource "aws_autoscaling_group" "apache_asg" {
 ##################################################
 
 
-################## Web Access ####################
+################## ALB Access ####################
 
 resource "aws_security_group" "asg_lb_access" {
   name        = "${var.name_prefix}_asg_web_access"
