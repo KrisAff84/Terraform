@@ -27,3 +27,8 @@ resource "aws_security_group" "main" {
     }
   }
 }
+
+# Overuse of dynamic blocks can make configuration hard to read and maintain.
+# If you find yourself using a dynamic block with only one nested block,
+# consider using a for expression instead.
+
