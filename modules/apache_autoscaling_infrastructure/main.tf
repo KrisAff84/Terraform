@@ -2,7 +2,6 @@
 # Data - Default VPC and Subnets
 #########################################
 
-# WHEN THIS NOTE DISAPPEARS IT'S SAFE 
 data "aws_vpc" "default" {
   default = true
 }
