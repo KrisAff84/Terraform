@@ -1,5 +1,5 @@
 #########################################
-# Data 
+# Data - Default VPC and Subnets
 #########################################
 
 data "aws_vpc" "default" {
@@ -10,6 +10,10 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+}
+
+locals {
+  vpc_id = var.vpc != "" ? var.vpc : data.aws_vpc.default.id
 }
 
 ###########################################
@@ -25,20 +29,17 @@ resource "aws_launch_template" "apache_lt" {
     aws_security_group.asg_lb_access.id,
     aws_security_group.asg_ssh_access_sg.id
   ]
-  user_data = base64encode(<<EOF
-#!/bin/bash
-yum update -y
-yum install httpd -y
-systemctl start httpd
-systemctl enable httpd
-EOF
-  )
+  user_data = file(var.user_data_file)
 }
 
 ###########################################
 # Autoscaling Group
 ###########################################
 
+locals {
+  subnet_id1 = var.private_subnet_1 != "" ? var.private_subnet_1 : data.aws_subnets.default.ids[0]
+  subnet_id2 = var.private_subnet_2 != "" ? var.private_subnet_2 : data.aws_subnets.default.ids[1]
+}
 resource "aws_autoscaling_group" "apache_asg" {
   name = "${var.name_prefix}_asg"
   launch_template {
@@ -50,8 +51,8 @@ resource "aws_autoscaling_group" "apache_asg" {
   health_check_type = "ELB"
   desired_capacity  = var.desired_capacity
   vpc_zone_identifier = [
-    data.aws_subnets.default.ids[0],
-    data.aws_subnets.default.ids[1]
+    local.subnet_id1,
+    local.subnet_id2
   ]
   target_group_arns = [aws_lb_target_group.asg_lb_tg.arn]
 }
@@ -61,12 +62,12 @@ resource "aws_autoscaling_group" "apache_asg" {
 ##################################################
 
 
-################## ALB Access ####################
+################## Web Access ####################
 
 resource "aws_security_group" "asg_lb_access" {
   name        = "${var.name_prefix}_asg_web_access"
   description = "Allow web access through load balancer"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = local.vpc_id
   ingress {
     description     = var.http_rule_description
     from_port       = var.http_from_port
@@ -88,7 +89,7 @@ resource "aws_security_group" "asg_lb_access" {
 resource "aws_security_group" "asg_ssh_access_sg" {
   name        = "${var.name_prefix}_asg_ssh_access"
   description = var.ssh_sg_description
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = local.vpc_id
   ingress {
     description = var.ssh_sg_description
     from_port   = var.ssh_from_port
@@ -109,14 +110,18 @@ resource "aws_security_group" "asg_ssh_access_sg" {
 # Application Load Balancer
 #############################################
 
+locals {
+  subnet_id3 = var.public_subnet_1 != "" ? var.public_subnet_1 : data.aws_subnets.default.ids[0]
+  subnet_id4 = var.public_subnet_2 != "" ? var.public_subnet_2 : data.aws_subnets.default.ids[1]
+}
 resource "aws_lb" "asg_lb" {
   name               = "${var.name_prefix}-asg-lb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.asg_lb_sg.id]
   subnets = [
-    data.aws_subnets.default.ids[0],
-    data.aws_subnets.default.ids[1]
+    local.subnet_id3,
+    local.subnet_id4
   ]
 }
 
@@ -138,7 +143,7 @@ resource "aws_lb_target_group" "asg_lb_tg" {
   name     = "${var.name_prefix}-asg-lb-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id
+  vpc_id   = local.vpc_id
 }
 
 #############################################
@@ -148,7 +153,7 @@ resource "aws_lb_target_group" "asg_lb_tg" {
 resource "aws_security_group" "asg_lb_sg" {
   name        = "${var.name_prefix}_asg_lb_sg"
   description = var.lb_sg_description
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = local.vpc_id
   ingress {
     description      = var.http_rule_description
     from_port        = var.http_from_port
