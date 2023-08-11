@@ -11,6 +11,12 @@ variable "region" {
   type = string
 }
 
+variable "vpc" {
+  description = "VPC ID"
+  type        = string
+  default     = ""
+}
+
 ################################
 # Launch Template
 ################################
@@ -23,6 +29,10 @@ variable "instance_type" {
 }
 variable "key_name" {
   type = string
+}
+variable "user_data_file" {
+  type = string
+  default = "apache_rpm.sh"
 }
 
 ################################
@@ -37,6 +47,26 @@ variable "min_size" {
 }
 variable "desired_capacity" {
   type = number
+}
+variable "private_subnet_1" {
+  description = "Private Subnet ID for autoscaling group"
+  type        = string
+  default     = ""
+}
+variable "private_subnet_2" {
+  description = "Private Subnet ID for autoscaling group"
+  type        = string
+  default     = ""
+}
+variable "public_subnet_1" {
+  description = "Public Subnet ID for load balancer"
+  type        = string
+  default     = ""
+}
+variable "public_subnet_2" {
+  description = "Public Subnet ID for load balancer"
+  type        = string
+  default     = ""
 }
 
 ################################
