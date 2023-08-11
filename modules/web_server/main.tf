@@ -1,3 +1,7 @@
+#####################################
+# Terraform Version and Providers
+#####################################
+
 terraform {
   required_version = "~> 1.5.3"
   required_providers {
@@ -10,8 +14,32 @@ provider "aws" {
   region = var.region
 }
 
+#####################################
+# Data Sources
+#####################################
+
+data "aws_vpc" "default" {
+  default = true
+}
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+locals {
+  public_subnets = var.public_subnets != {"" = ""} ? var.public_subnets : {public_subnet_1 = data.aws_subnets.public.ids[0]}
+  vpc_id         = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.default.id
+}
+
+
+#####################################
+# Web Server(s)
+#####################################
+
+
 resource "aws_instance" "web" {
-  for_each      = var.public_subnets
+  for_each      = local.public_subnets
   ami           = var.ami
   instance_type = var.instance_type
   key_name      = var.key_name
@@ -19,16 +47,22 @@ resource "aws_instance" "web" {
     aws_security_group.web_access.id,
     aws_security_group.ssh_access.id
   ]
+  user_data = file(var.user_data_file)
   subnet_id = each.value
   tags = {
-    Name = "web"
+    Name = "web_server_${each.key}"
   }
+  associate_public_ip_address = true
 }
+
+#####################################
+# Security Groups
+#####################################
 
 resource "aws_security_group" "web_access" {
   name        = "web_access"
   description = "Allow web traffic"
-  vpc_id      = var.vpc_id
+  vpc_id      = local.vpc_id
   ingress {
     from_port   = var.from_port_1
     to_port     = var.to_port_1
@@ -67,68 +101,3 @@ resource "aws_security_group" "ssh_access" {
   }
 }
 
-variable "region" {
-  type = string
-}
-variable "public_subnets" {
-  type = map(string)
-}
-variable "ami" {
-  type = string
-}
-variable "instance_type" {
-  type = string
-}
-variable "key_name" {
-  type = string
-}
-variable "vpc_id" {
-  type = string
-}
-variable "my_ip" {
-  type = string
-}
-variable "from_port_1" {
-  type    = number
-  default = 80
-}
-variable "to_port_1" {
-  type    = number
-  default = 80
-}
-variable "protocol_1" {
-  type    = string
-  default = "tcp"
-}
-variable "cidr_block_1" {
-  type    = string
-  default = "0.0.0.0/0"
-}
-variable "from_port_2" {
-  type    = number
-  default = 443
-}
-variable "to_port_2" {
-  type    = number
-  default = 443
-}
-variable "protocol_2" {
-  type    = string
-  default = "tcp"
-}
-variable "cidr_block_2" {
-  type    = string
-  default = "0.0.0.0/0"
-}
-variable "from_ssh_port" {
-  type    = number
-  default = 22
-}
-variable "to_ssh_port" {
-  type    = number
-  default = 22
-}
-variable "ssh_protocol" {
-  type    = string
-  default = "tcp"
-}
