@@ -5,12 +5,16 @@
 variable "region" {
   type = string
 }
+variable "name_prefix" {
+  description = "Prefix to use for naming all resources in this module"
+  type        = string
+  default     = "tf-test"
+}
 
 ################################
 # Web Server(s)
 ################################
 
-### Place note in README about needing to keep key name consistent
 variable "public_subnet_ids" {
   description = "List of public subnet IDs to deploy instances to"
   type        = map(string)
@@ -40,6 +44,13 @@ variable "user_data_file" {
 variable "vpc_id" {
   type    = string
   default = ""
+}
+############ Web Access ############
+
+variable "web_access_sg_description" {
+  description = "Description of the web access security group"
+  type        = string
+  default     = "Allow HTTP and HTTPS traffic"
 }
 variable "from_port_1" {
   description = "From port of first ingress rule"
@@ -80,6 +91,9 @@ variable "cidr_block_2" {
   description = "CIDR block of second ingress rule"
   default     = "0.0.0.0/0"
 }
+
+############ SSH Access ############
+
 variable "from_ssh_port" {
   description = "From port of SSH ingress rule"
   type        = number

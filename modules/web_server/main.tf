@@ -58,13 +58,13 @@ resource "aws_instance" "web" {
   instance_type = var.instance_type
   key_name      = var.key_name
   vpc_security_group_ids = [
-    aws_security_group.web_access.id,
-    aws_security_group.ssh_access.id
+    aws_security_group.ssh_access.id,
+    local.load_balancer > 0 ? aws_security_group.lb_access.id : aws_security_group.web_access.id
   ]
   user_data = var.user_data_file != "" ? file(var.user_data_file) : local.default_user_data
   subnet_id = each.value
   tags = {
-    Name = "web_server_${index(keys(local.public_subnet_ids), each.key) + 1}"
+    Name = "${var.name_prefix}_web_server_${index(keys(local.public_subnet_ids), each.key) + 1}"
   }
   associate_public_ip_address = true
 }
@@ -73,9 +73,10 @@ resource "aws_instance" "web" {
 # Security Groups
 #####################################
 
+############ Web Access ############
 resource "aws_security_group" "web_access" {
-  name        = "web_access"
-  description = "Allow web traffic"
+  name        = "${var.name_prefix}_web_access_sg"
+  description = var.web_access_sg_description
   vpc_id      = local.vpc_id
   ingress {
     from_port   = var.from_port_1
@@ -97,8 +98,9 @@ resource "aws_security_group" "web_access" {
   }
 }
 
+############ SSH Access ############
 resource "aws_security_group" "ssh_access" {
-  name        = "ssh_access"
+  name        = "${var.name_prefix}_ssh_access_sg"
   description = "Allow SSH traffic"
   vpc_id      = var.vpc_id
   ingress {
@@ -115,18 +117,68 @@ resource "aws_security_group" "ssh_access" {
   }
 }
 
+##### Load Balancer Access #####
+
+resource "aws_security_group" "lb_access" {
+  name        = "${var.name_prefix}_lb_access_sg"
+  description = "Allow HTTP and HTTPS traffic"
+  vpc_id      = local.vpc_id
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    security_groups = [aws_security_group.web_access.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 #####################################
 # Load Balancer
 #####################################
 
 resource "aws_lb" "web" {
   count              = local.load_balancer
-  name               = "web-lb"
+  name               = "${var.name_prefix}-web-lb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.web_access.id]
-  subnets            = data.aws_subnets.public.ids
+  subnets            = values(local.public_subnet_ids)
   tags = {
-    Name = "web_lb"
+    Name = "${var.name_prefix}-web-lb"
   }
+}
+
+############### Listener #####################
+
+resource "aws_lb_listener" "lb_listener" {
+  count             = local.load_balancer
+  load_balancer_arn = aws_lb.web[0].arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.lb_tg.arn
+  }
+}
+
+############### Target Group #####################
+
+resource "aws_lb_target_group" "lb_tg" {
+  name     = "${var.name_prefix}-asg-lb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = local.vpc_id
+}
+
+resource "aws_lb_target_group_attachment" "lb_tg_attachment" {
+  # depends_on = [aws_instance.web]
+  for_each         = aws_instance.web
+  target_group_arn = aws_lb_target_group.lb_tg.arn
+  target_id        = each.value.id
+  port             = 80
 }
