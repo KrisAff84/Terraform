@@ -24,12 +24,12 @@ If you are specifying subnets to deploy instances to, the subnet variables must 
         "subnet_2" = "subnet-0ce005b7cd036d206"
     }
 
-    or if you are using a network module then you need to provide module output(s) that specify the desired subnet ID(s). 
+   or if you are using a network module then you need to provide module output(s) that specify the desired subnet ID(s). 
 
     public_subnet_ids = {
         "subnet_1" = module.network_module.subnet_id_1,
         "subnet_2" = module.network_module.subnet_id_2
     }
-    
-    In the above examples the keys "subnet_1" and "subnet_2" do not matter. What's important is that the values are subnet IDs and the map format is correct. 
+
+   In the above examples the keys "subnet_1" and "subnet_2" do not matter. What's important is that the values are subnet IDs and the map format is correct. 
 
