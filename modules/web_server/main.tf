@@ -27,9 +27,23 @@ data "aws_subnets" "public" {
     values = [data.aws_vpc.default.id]
   }
 }
+
+#####################################
+# Locals
+#####################################
+
 locals {
-  public_subnets = var.public_subnets != {"" = ""} ? var.public_subnets : {public_subnet_1 = data.aws_subnets.public.ids[0]}
-  vpc_id         = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.default.id
+  public_subnet_ids = var.public_subnet_ids != { "" = "" } ? var.public_subnet_ids : { "public_subnet_1" = data.aws_subnets.public.ids[0] }
+  vpc_id            = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.default.id
+  load_balancer     = length(var.public_subnet_ids) > 1 ? 1 : 0
+  default_user_data = <<-EOF
+#!/bin/bash
+apt update
+apt install -y nginx
+systemctl start nginx
+systemctl enable nginx
+echo "<h1>This EC2 instance was deployed with a Terraform module!</h1>" >> /var/www/html/index.html
+EOF
 }
 
 
@@ -39,7 +53,7 @@ locals {
 
 
 resource "aws_instance" "web" {
-  for_each      = local.public_subnets
+  for_each      = local.public_subnet_ids
   ami           = var.ami
   instance_type = var.instance_type
   key_name      = var.key_name
@@ -47,10 +61,10 @@ resource "aws_instance" "web" {
     aws_security_group.web_access.id,
     aws_security_group.ssh_access.id
   ]
-  user_data = file(var.user_data_file)
+  user_data = var.user_data_file != "" ? file(var.user_data_file) : local.default_user_data
   subnet_id = each.value
   tags = {
-    Name = "web_server_${each.key}"
+    Name = "web_server_${index(keys(local.public_subnet_ids), each.key) + 1}"
   }
   associate_public_ip_address = true
 }
@@ -101,3 +115,18 @@ resource "aws_security_group" "ssh_access" {
   }
 }
 
+#####################################
+# Load Balancer
+#####################################
+
+resource "aws_lb" "web" {
+  count              = local.load_balancer
+  name               = "web-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.web_access.id]
+  subnets            = data.aws_subnets.public.ids
+  tags = {
+    Name = "web_lb"
+  }
+}
