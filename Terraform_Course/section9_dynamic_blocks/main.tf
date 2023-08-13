@@ -7,8 +7,8 @@ locals {
     description = "TLS from internet"
     },
     {
-      port        = 80
-      description = "HTTP from internet"
+    port        = 80
+    description = "HTTP from internet"
   }]
 }
 

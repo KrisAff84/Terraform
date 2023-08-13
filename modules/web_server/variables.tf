@@ -10,16 +10,11 @@ variable "region" {
 # Web Server(s)
 ################################
 
-variable "public_subnets" {
-  description = <<EOF
-    Map of public subnets to deploy web servers 
-    (key = subnet_number, value = subnet ID) 
-    e.g. { "public_subnet_1" = "subnet-1234567890abcdef0" } 
-    Number of web servers is determined by the number of 
-    key/value pairs in the map.
-    EOF
+### Place note in README about needing to keep key name consistent
+variable "public_subnet_ids" {
+  description = "List of public subnet IDs to deploy instances to"
   type        = map(string)
-  default     = {
+  default = {
     "" = ""
   }
 }
@@ -35,6 +30,7 @@ variable "key_name" {
 variable "user_data_file" {
   description = "Path to the user data file"
   type        = string
+  default     = ""
 }
 
 #######################################
@@ -42,7 +38,7 @@ variable "user_data_file" {
 #######################################
 
 variable "vpc_id" {
-  type = string
+  type    = string
   default = ""
 }
 variable "from_port_1" {
