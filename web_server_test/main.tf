@@ -40,13 +40,13 @@ output "server_instance_type" {
   value = module.web_server.instance_type
 }
 output "server_availability_zones" {
-  value = module.web_server.azs
+  value = module.web_server.instance_azs
 }
 output "server_security_groups" {
   value = module.web_server.security_groups
 }
 output "server_public_ip" {
-  value = module.web_server.public_ip
+  value = module.web_server.public_ips
 }
 output "server_ami" {
   value = module.web_server.ami
@@ -55,7 +55,7 @@ output "lb_dns" {
   value = module.web_server.lb_dns_name
 }
 output "instance_ids" {
-  value = module.web_server.instance_id
+  value = module.web_server.instance_ids
 }
 output "db_address" {
   value = module.database.db_address

@@ -13,6 +13,10 @@ provider "aws" {
   region = var.region
 }
 
+#####################################
+# Database and Subnet Group
+#####################################
+
 resource "aws_db_subnet_group" "default" {
   name       = "${var.name_prefix}_db_subnet_group"
   subnet_ids = var.db_subnet_ids
@@ -37,8 +41,12 @@ resource "aws_db_instance" "default" {
   instance_class                  = var.instance_class
   username                        = var.username
   password                        = var.password
+  port                            = var.open_port
+  publicly_accessible             = var.publicly_accessible
   skip_final_snapshot             = var.skip_final_snapshot
+  storage_encrypted               = var.encrypted
   final_snapshot_identifier       = var.final_snapshot_name
+  max_allocated_storage           = var.max_storage
   vpc_security_group_ids = [
     aws_security_group.db_access.id
   ]
@@ -53,8 +61,8 @@ resource "aws_security_group" "db_access" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = var.db_from_port
-    to_port         = var.db_to_port
+    from_port       = var.open_port
+    to_port         = var.open_port
     protocol        = var.db_protocol
     security_groups = [var.db_access_source_sg]
   }

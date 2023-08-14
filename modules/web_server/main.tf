@@ -124,9 +124,9 @@ resource "aws_security_group" "lb_access" {
   description = "Allow HTTP and HTTPS traffic"
   vpc_id      = local.vpc_id
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
     security_groups = [aws_security_group.web_access.id]
   }
   egress {
@@ -148,6 +148,10 @@ resource "aws_lb" "web" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.web_access.id]
   subnets            = values(local.public_subnet_ids)
+  access_logs {
+    bucket  = var.lb_access_logs_bucket
+    enabled = var.lb_access_logs_enabled
+  }
   tags = {
     Name = "${var.name_prefix}-web-lb"
   }
@@ -155,20 +159,20 @@ resource "aws_lb" "web" {
 
 ############### Listener #####################
 
-resource "aws_lb_listener" "lb_listener" {
+resource "aws_lb_listener" "web" {
   count             = local.load_balancer
   load_balancer_arn = aws_lb.web[0].arn
   port              = 80
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_tg.arn
+    target_group_arn = aws_lb_target_group.web.arn
   }
 }
 
 ############### Target Group #####################
 
-resource "aws_lb_target_group" "lb_tg" {
+resource "aws_lb_target_group" "web" {
   name     = "${var.name_prefix}-asg-lb-tg"
   port     = 80
   protocol = "HTTP"
@@ -176,9 +180,8 @@ resource "aws_lb_target_group" "lb_tg" {
 }
 
 resource "aws_lb_target_group_attachment" "lb_tg_attachment" {
-  # depends_on = [aws_instance.web]
   for_each         = aws_instance.web
-  target_group_arn = aws_lb_target_group.lb_tg.arn
+  target_group_arn = aws_lb_target_group.web.arn
   target_id        = each.value.id
   port             = 80
 }

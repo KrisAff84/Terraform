@@ -113,3 +113,18 @@ variable "my_ip" {
   description = "IP address to allow SSH access"
   type        = string
 }
+
+################################
+# Load Balancer
+################################
+
+variable "lb_access_logs_enabled" {
+  description = "Enable access logs for the load balancer"
+  type        = bool
+  default     = false
+}
+variable "lb_access_logs_bucket" {
+    description = "S3 bucket name to store load balancer access logs"
+    type        = string
+    default     = ""
+}
