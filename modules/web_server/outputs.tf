@@ -81,3 +81,26 @@ output "lb_dns_name" {
   value       = local.load_balancer > 0 ? aws_lb.web[0].dns_name : null
 }
 
+################################
+# Security Groups
+################################
+
+######## Web Access ########
+output "web_access_sg_id" {
+  description = "The ID of the web access security group"
+  value       = aws_security_group.web_access.id
+}
+
+######## SSH Access ########
+
+output "ssh_access_sg_id" {
+  description = "The ID of the SSH access security group"
+  value       = aws_security_group.ssh_access.id
+}
+
+#### Load Balancer Access ####
+
+output "lb_access_sg_id" {
+  description = "The ID of the load balancer access security group"
+  value       = local.load_balancer > 0 ? aws_security_group.lb_access.id : null
+}
