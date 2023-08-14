@@ -1,5 +1,5 @@
 variable "region" {
-  default = "us-west-2"
+  type = string
 }
 variable "vpc_cidr" {
   description = "The CIDR block for the VPC"
