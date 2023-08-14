@@ -103,6 +103,26 @@ variable "final_snapshot_name" {
   type        = string
   default     = null
 }
+variable "max_storage" {
+  description = "Max storage to autoscale to. By default autoscaling is disabled"
+  type        = number
+  default     = 0
+}
+variable "open_port" {
+    description = "The port in which the database accepts connections"
+    type        = number
+    default     = 3306
+}
+variable "publicly_accessible" {
+    description = "Whether the database is publicly accessible"
+    type        = bool
+    default     = false
+}
+variable "encrypted" {
+    description = "Whether the database is encrypted"
+    type        = bool
+    default     = true
+}
 
 #################################
 # Security Group
@@ -113,16 +133,9 @@ variable "db_access_sg_description" {
   type        = string
   default     = "Allow database access"
 }
-variable "db_from_port" {
-  description = "The starting port for the database access security group"
-  type        = number
-  default     = 3306
-}
-variable "db_to_port" {
-  description = "The ending port for the database access security group"
-  type        = number
-  default     = 3306
-}
+
+# To change the desired port use "open_port" above
+
 variable "db_protocol" {
   description = "The protocol for the database access security group"
   type        = string
