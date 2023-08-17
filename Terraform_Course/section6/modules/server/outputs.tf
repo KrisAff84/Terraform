@@ -6,5 +6,5 @@ output "public_dns" {
 }
 output "size" {
   description = "Size of server built with Module"
-  value = aws_instance.web.instance_type
+  value       = aws_instance.web.instance_type
 }

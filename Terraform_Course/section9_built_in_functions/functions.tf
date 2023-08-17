@@ -3,17 +3,17 @@
 ############################
 
 variable "num_1" {
-  type = number
+  type    = number
   default = 10
 }
 
 variable "num_2" {
-  type = number
+  type    = number
   default = 27
 }
 
 variable "num_3" {
-  type = number
+  type    = number
   default = 16
 }
 
@@ -36,9 +36,9 @@ output "min_value" {
 
 locals {
   common_tags = {
-    Name = lower(local.server_name)
-    Owner = lower(local.team)
-    App = lower(local.app)
+    Name      = lower(local.server_name)
+    Owner     = lower(local.team)
+    App       = lower(local.app)
     CreatedBy = lower(local.created_by)
   }
 }
@@ -53,11 +53,11 @@ locals {
 # netnum = subnet number to allocate (the third decimal place in the cidr block)
 
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.0.0.0/16"
 }
 
 locals {
-  public_subnet_cidrs = cidrsubnet(var.vpc_cidr, 8, [1, 2, 3, 4])
+  public_subnet_cidrs  = cidrsubnet(var.vpc_cidr, 8, [1, 2, 3, 4])
   private_subnet_cidrs = cidrsubnet(var.vpc_cidr, 8, [101, 102, 103, 104])
 }

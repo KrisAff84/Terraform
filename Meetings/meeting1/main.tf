@@ -13,10 +13,10 @@ provider "aws" {
 }
 
 resource "aws_instance" "MyWeb" {
-  ami           = "ami-051349fa6761577cc"
-  instance_type = "t2.micro"
-  count = "1"
-  key_name = "kriskey"
+  ami             = "ami-051349fa6761577cc"
+  instance_type   = "t2.micro"
+  count           = "1"
+  key_name        = "kriskey"
   security_groups = ["Web"]
 
   tags = {

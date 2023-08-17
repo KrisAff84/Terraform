@@ -84,15 +84,15 @@ output "lb_dns_name" {
 ###### LB Listener ######
 
 output "listener_arn" {
-    description = "The ARN of the load balancer listener"
-    value       = local.load_balancer > 0 ? aws_lb_listener.web[0].arn : null
+  description = "The ARN of the load balancer listener"
+  value       = local.load_balancer > 0 ? aws_lb_listener.web[0].arn : null
 }
 
 ##### LB Target Group #####
 
 output "target_group_arn" {
-    description = "The ARN of the load balancer target group"
-    value       = local.load_balancer > 0 ? aws_lb_target_group.web.arn : null
+  description = "The ARN of the load balancer target group"
+  value       = local.load_balancer > 0 ? aws_lb_target_group.web.arn : null
 }
 
 ################################

@@ -376,8 +376,8 @@ output "s3_bucket_name" {
   value = module.s3-bucket.s3_bucket_bucket_domain_name
 }
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.1.1"
+  source             = "terraform-aws-modules/vpc/aws"
+  version            = "5.1.1"
   name               = "my-vpc-terraform"
   cidr               = "10.0.0.0/16"
   azs                = ["us-east-1a", "us-east-1b", "us-east-1c"]

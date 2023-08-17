@@ -6,10 +6,10 @@ variable "key_name" {
 }
 variable "path" {
   description = "The desired path to store private key"
-  type = string
-  default = "./"
+  type        = string
+  default     = "./"
 }
 variable "tags" {
-  type = map
+  type    = map(any)
   default = null
 }

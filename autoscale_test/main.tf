@@ -9,7 +9,7 @@ module "auto_scaling_group" {
   min_size         = 2
   desired_capacity = 2
   my_ip            = "24.162.52.74/32"
-  vpc = module.network.vpc_id
+  vpc              = module.network.vpc_id
   private_subnet_1 = module.network.private_subnet1_id
   private_subnet_2 = module.network.private_subnet2_id
   public_subnet_1  = module.network.public_subnet1_id
@@ -17,8 +17,8 @@ module "auto_scaling_group" {
 }
 
 module "network" {
-  source = "../modules/2_tier_network"
-  region  = "us-west-2"
+  source   = "../modules/2_tier_network"
+  region   = "us-west-2"
   vpc_cidr = "10.0.0.0/16"
 }
 

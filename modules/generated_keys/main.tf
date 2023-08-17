@@ -8,5 +8,5 @@ resource "local_file" "private_key_pem" {
 resource "aws_key_pair" "key" {
   key_name   = var.key_name
   public_key = tls_private_key.key.public_key_openssh
-  tags = var.tags
+  tags       = var.tags
 }

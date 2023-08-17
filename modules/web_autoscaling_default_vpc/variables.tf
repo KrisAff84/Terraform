@@ -25,7 +25,7 @@ variable "key_name" {
   type = string
 }
 variable "user_data_file" {
-  type = string
+  type    = string
   default = "apache_rpm.sh"
 }
 

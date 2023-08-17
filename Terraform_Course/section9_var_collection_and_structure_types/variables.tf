@@ -45,7 +45,7 @@ variable "env" {
 # To refer to map of maps, use the following syntax:
 
 resource "aws_subnet" "list_subnet" {
-  for_each = var.env
+  for_each          = var.env
   vpc_id            = aws_vpc.main.id
   cidr_block        = each.value.ip
   availability_zone = each.value.az
@@ -54,7 +54,7 @@ resource "aws_subnet" "list_subnet" {
 # Or to refer to a specific map of maps, use the following syntax:
 
 resource "aws_subnet" "list_subnet" {
-  for_each = var.env["dev"]
+  for_each          = var.env["dev"]
   vpc_id            = aws_vpc.main.id
   cidr_block        = each.value.ip
   availability_zone = each.value.az

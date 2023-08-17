@@ -2,10 +2,10 @@
 
 locals {
   common_tags = {
-    Name = "MyName"
-    Owner = "Me"
+    Name    = "MyName"
+    Owner   = "Me"
     Service = "WebService"
-    App = "MyApp"
+    App     = "MyApp"
   }
 }
 # In addition to strings, expressions can be used to define locals.
@@ -17,5 +17,5 @@ locals {
 resource "aws_instance" "web" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
-  tags = local.common_tags
+  tags          = local.common_tags
 }

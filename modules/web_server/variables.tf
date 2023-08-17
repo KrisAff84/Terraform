@@ -124,7 +124,7 @@ variable "lb_access_logs_enabled" {
   default     = false
 }
 variable "lb_access_logs_bucket" {
-    description = "S3 bucket name to store load balancer access logs"
-    type        = string
-    default     = ""
+  description = "S3 bucket name to store load balancer access logs"
+  type        = string
+  default     = ""
 }

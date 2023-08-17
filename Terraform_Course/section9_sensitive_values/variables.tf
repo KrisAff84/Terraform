@@ -1,5 +1,5 @@
 variable "phone_number" {
-  type = string
+  type      = string
   sensitive = true
 }
 
@@ -7,7 +7,7 @@ variable "phone_number" {
 # Adding sensitive = true to the output will prevent the value from being displayed in the output
 
 output "phone_number" {
-  value = var.phone_number
+  value     = var.phone_number
   sensitive = true
 }
 

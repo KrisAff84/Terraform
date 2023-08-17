@@ -132,7 +132,7 @@ resource "aws_instance" "web" {
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnets["public_subnet_1"].id
   vpc_security_group_ids = [aws_security_group.my-new-security-group.id]
-  key_name = "kriskey"
+  key_name               = "kriskey"
   tags = {
     "Identity" = "Web_Server"
     "Name"     = "Web_Server"
@@ -167,9 +167,9 @@ resource "aws_security_group" "my-new-security-group" {
   }
   ingress {
     description = "Allow SSH from my IP"
-    from_port = "22"
-    to_port = "22"
-    protocol = "tcp"
+    from_port   = "22"
+    to_port     = "22"
+    protocol    = "tcp"
     cidr_blocks = ["24.162.52.74/32"]
   }
   tags = {

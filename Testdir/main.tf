@@ -1,11 +1,11 @@
 module "keys" {
   source = "../modules/generated_keys"
 
-  region = "us-east-2"
+  region   = "us-east-2"
   key_name = "TestKey"
   tags = {
     Environment = "Terrform Modules Test"
-    Department = "DevSecOps"
+    Department  = "DevSecOps"
   }
 }
 output "arn" {
